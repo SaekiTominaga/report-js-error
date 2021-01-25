@@ -39,7 +39,7 @@ new ReportJSError(endpoint: string, option: {
 ### Parameters
 
 <dl>
-<dt>endPoint [required]</dt>
+<dt>endpoint [required]</dt>
 <dd>URL of the endpoint</dd>
 <dt>option [optional]</dt>
 <dd>Information such as transmission conditions</dd>
