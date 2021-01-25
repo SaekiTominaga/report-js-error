@@ -4,6 +4,10 @@
 
 Detects the `error` event of the `window` object and sends error information to the endpoint.
 
+## Demo
+
+- [Demo page](https://saekitominaga.github.io/report-js-error/demo.html)
+
 ## Examples
 
 ```JavaScript
