@@ -1,9 +1,17 @@
+interface jsErrorFetchParam {
+    location: string;
+    message: string;
+    filename: string;
+    lineno: string;
+    colno: string;
+}
 interface jsErrorFetchOption {
+    fetchParam?: jsErrorFetchParam;
+    fetchHeaders?: HeadersInit;
     denyFilenames?: RegExp[];
     allowFilenames?: RegExp[];
     denyUAs?: RegExp[];
     allowUAs?: RegExp[];
-    fetchHeaders?: HeadersInit;
 }
 /**
  * Send script error information to endpoints.
@@ -19,6 +27,12 @@ export default class {
      * Initial processing
      */
     init(): void;
+    /**
+     * ユーザーエージェントがレポートを行う対象かどうかチェックする
+     *
+     * @returns {boolean} 対象なら true
+     */
+    private _checkUserAgent;
     /**
      * エラー情報をエンドポイントに送信する
      *

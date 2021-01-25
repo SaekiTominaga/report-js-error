@@ -14,6 +14,16 @@ Detects the `error` event of the `window` object and sends error information to 
 import ReportJSError from '@saekitominaga/report-js-error';
 
 const reportJSError = new ReportJSError('https://report.example.com/js', {
+  'fetchParam': {
+    location: 'loc',
+    message: 'msg',
+    filename: 'file',
+    lineno: 'line',
+    colno: 'col',
+  },
+  'fetchHeaders': {
+    'X-Requested-With': 'hoge',
+  },
   'allowFilenames': [
     /\.js$/,
     /\.mjs$/,
@@ -21,9 +31,6 @@ const reportJSError = new ReportJSError('https://report.example.com/js', {
   'denyUAs': [
     /Googlebot\/2.1;/,
   ],
-  'fetchHeaders': {
-    'X-Requested-With': 'hoge',
-  },
 });
 reportJSError.init();
 ```
@@ -32,11 +39,18 @@ reportJSError.init();
 
 ```TypeScript
 new ReportJSError(endpoint: string, option: {
-	denyFilenames?: RegExp[]; // If the script filename (`ErrorEvent.filename`) matches this regular expression, do not send report
-	allowFilenames?: RegExp[]; // If the script filename (`ErrorEvent.filename`) matches this regular expression, send report
-	denyUAs?: RegExp[]; // If a user agent matches this regular expression, do not send report
-	allowUAs?: RegExp[]; // If a user agent matches this regular expression, send report
-	fetchHeaders?: HeadersInit; // Header to add to the `fetch()` request. <https://fetch.spec.whatwg.org/#typedefdef-headersinit>
+  fetchParam?: {
+    location: string; // Field name when sending `location` to an endpoint. The default value when omitted is `location`. (e.g. location=https%3A%2F%2Fexample.com%2Fpath%2Fto&message=(omit)&filename=(omit)&lineno=(omit)&colno=(omit) )
+    message: string; // Field name when sending `ErrorEvent.message` to an endpoint. The default value when omitted is `message`. (e.g. location=(omit)&message=ReferenceError%3A+hoge+is+not+defined&filename=(omit)&lineno=(omit)&colno=(omit) )
+    filename: string; // Field name when sending `ErrorEvent.filename` to an endpoint. The default value when omitted is `filename`. (e.g. location=(omit)&referrer=(omit)&message=(omit)&filename=https%3A%2F%2Fexample.com%2Fpath%2Fto&lineno=(omit)&colno=(omit) )
+    lineno: string; // Field name when sending `ErrorEvent.lineno` to an endpoint. The default value when omitted is `lineno`. (e.g. location=(omit)&referrer=(omit)&message=(omit)&filename=(omit)&lineno=10&colno=(omit) )
+    colno: string; // Field name when sending `ErrorEvent.colno` to an endpoint. The default value when omitted is `colno`. (e.g. location=(omit)&referrer=(omit)&message=(omit)&filename=(omit)&lineno=(omit)&colno=20 )
+  },
+  denyFilenames?: RegExp[]; // If the script filename (`ErrorEvent.filename`) matches this regular expression, do not send report
+  allowFilenames?: RegExp[]; // If the script filename (`ErrorEvent.filename`) matches this regular expression, send report
+  denyUAs?: RegExp[]; // If a user agent matches this regular expression, do not send report
+  allowUAs?: RegExp[]; // If a user agent matches this regular expression, send report
+  fetchHeaders?: HeadersInit; // Header to add to the `fetch()` request. <https://fetch.spec.whatwg.org/#typedefdef-headersinit>
 } = {})
 ```
 

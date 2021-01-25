@@ -7,10 +7,10 @@
 			import ReportJSError from './dist/ReportJSError.js';
 
 			const reportJSError = new ReportJSError('https://w0s.jp/report/js', {
-				denyUAs: [/Googlebot\/2.1;/],
 				fetchHeaders: {
 					'X-Requested-With': 'fetch',
 				},
+				denyUAs: [/Googlebot\/2.1;/],
 			});
 			reportJSError.init();
 

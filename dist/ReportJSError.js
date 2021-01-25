@@ -25,6 +25,15 @@ export default class {
         _option.set(this, void 0);
         _errorEventListener.set(this, void 0);
         __classPrivateFieldSet(this, _endpoint, endpoint);
+        if (option.fetchParam === undefined) {
+            option.fetchParam = {
+                location: 'location',
+                message: 'message',
+                filename: 'filename',
+                lineno: 'lineno',
+                colno: 'colno',
+            };
+        }
         __classPrivateFieldSet(this, _option, option);
         __classPrivateFieldSet(this, _errorEventListener, this._errorEvent.bind(this));
     }
@@ -32,19 +41,29 @@ export default class {
      * Initial processing
      */
     init() {
-        /* ユーザーエージェントがレポートを行う対象かどうかチェック */
+        if (!this._checkUserAgent()) {
+            return;
+        }
+        window.addEventListener('error', __classPrivateFieldGet(this, _errorEventListener), { passive: true });
+    }
+    /**
+     * ユーザーエージェントがレポートを行う対象かどうかチェックする
+     *
+     * @returns {boolean} 対象なら true
+     */
+    _checkUserAgent() {
         const ua = navigator.userAgent;
         const denyUAs = __classPrivateFieldGet(this, _option).denyUAs;
         if (denyUAs !== undefined && denyUAs.some((denyUA) => denyUA.test(ua))) {
             console.info('No JavaScript error report will be sent because the user agent match the deny list.');
-            return;
+            return false;
         }
         const allowUAs = __classPrivateFieldGet(this, _option).allowUAs;
         if (allowUAs !== undefined && !allowUAs.some((allowUA) => allowUA.test(ua))) {
             console.info('No JavaScript error report will be sent because the user agent does not match the allow list.');
-            return;
+            return false;
         }
-        window.addEventListener('error', __classPrivateFieldGet(this, _errorEventListener), { passive: true });
+        return true;
     }
     /**
      * エラー情報をエンドポイントに送信する
@@ -58,7 +77,7 @@ export default class {
         const colno = ev.colno;
         if (filename === '') {
             // 2020年11月現在、「YJApp-ANDROID jp.co.yahoo.android.yjtop/3.81.0」と名乗るブラウザがこのような挙動を行う（fillename === '' && lineno === 0 && colno === 0）
-            console.error('ErrorEvent.filename is empty');
+            console.error('`ErrorEvent.filename` is empty.');
             return;
         }
         const denyFilenames = __classPrivateFieldGet(this, _option).denyFilenames;
@@ -79,12 +98,13 @@ export default class {
                 console.error('A JavaScript error has occurred in a non-HTTP protocol (This may be due to a browser extension).');
                 return;
         }
+        const fetchParam = __classPrivateFieldGet(this, _option).fetchParam;
         const formData = new FormData();
-        formData.append('location', location.toString());
-        formData.append('message', message);
-        formData.append('filename', filename);
-        formData.append('lineno', String(lineno));
-        formData.append('colno', String(colno));
+        formData.append(fetchParam.location, location.toString());
+        formData.append(fetchParam.message, message);
+        formData.append(fetchParam.filename, filename);
+        formData.append(fetchParam.lineno, String(lineno));
+        formData.append(fetchParam.colno, String(colno));
         const response = await fetch(__classPrivateFieldGet(this, _endpoint), {
             method: 'POST',
             headers: __classPrivateFieldGet(this, _option).fetchHeaders,

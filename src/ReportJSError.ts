@@ -1,9 +1,18 @@
+interface jsErrorFetchParam {
+	location: string; // Field name when sending `location` to an endpoint.
+	message: string; // Field name when sending `ErrorEvent.message` to an endpoint.
+	filename: string; // Field name when sending `ErrorEvent.filename` to an endpoint.
+	lineno: string; // Field name when sending `ErrorEvent.lineno` to an endpoint.
+	colno: string; // Field name when sending `ErrorEvent.colno` to an endpoint.
+}
+
 interface jsErrorFetchOption {
+	fetchParam?: jsErrorFetchParam;
+	fetchHeaders?: HeadersInit; // Header to add to the `fetch()` request. <https://fetch.spec.whatwg.org/#typedefdef-headersinit>
 	denyFilenames?: RegExp[]; // If the script filename (`ErrorEvent.filename`) matches this regular expression, do not send report
 	allowFilenames?: RegExp[]; // If the script filename (`ErrorEvent.filename`) matches this regular expression, send report
 	denyUAs?: RegExp[]; // If a user agent matches this regular expression, do not send report
 	allowUAs?: RegExp[]; // If a user agent matches this regular expression, send report
-	fetchHeaders?: HeadersInit; // Header to add to the `fetch()` request. <https://fetch.spec.whatwg.org/#typedefdef-headersinit>
 }
 
 /**
@@ -21,6 +30,16 @@ export default class {
 	 */
 	constructor(endpoint: string, option: jsErrorFetchOption = {}) {
 		this.#endpoint = endpoint;
+
+		if (option.fetchParam === undefined) {
+			option.fetchParam = {
+				location: 'location',
+				message: 'message',
+				filename: 'filename',
+				lineno: 'lineno',
+				colno: 'colno',
+			};
+		}
 		this.#option = option;
 
 		this.#errorEventListener = this._errorEvent.bind(this);
@@ -30,21 +49,33 @@ export default class {
 	 * Initial processing
 	 */
 	init(): void {
-		/* ユーザーエージェントがレポートを行う対象かどうかチェック */
+		if (!this._checkUserAgent()) {
+			return;
+		}
+
+		window.addEventListener('error', this.#errorEventListener, { passive: true });
+	}
+
+	/**
+	 * ユーザーエージェントがレポートを行う対象かどうかチェックする
+	 *
+	 * @returns {boolean} 対象なら true
+	 */
+	private _checkUserAgent(): boolean {
 		const ua = navigator.userAgent;
 
 		const denyUAs = this.#option.denyUAs;
 		if (denyUAs !== undefined && denyUAs.some((denyUA) => denyUA.test(ua))) {
 			console.info('No JavaScript error report will be sent because the user agent match the deny list.');
-			return;
+			return false;
 		}
 		const allowUAs = this.#option.allowUAs;
 		if (allowUAs !== undefined && !allowUAs.some((allowUA) => allowUA.test(ua))) {
 			console.info('No JavaScript error report will be sent because the user agent does not match the allow list.');
-			return;
+			return false;
 		}
 
-		window.addEventListener('error', this.#errorEventListener, { passive: true });
+		return true;
 	}
 
 	/**
@@ -60,7 +91,7 @@ export default class {
 
 		if (filename === '') {
 			// 2020年11月現在、「YJApp-ANDROID jp.co.yahoo.android.yjtop/3.81.0」と名乗るブラウザがこのような挙動を行う（fillename === '' && lineno === 0 && colno === 0）
-			console.error('ErrorEvent.filename is empty');
+			console.error('`ErrorEvent.filename` is empty.');
 			return;
 		}
 
@@ -84,12 +115,14 @@ export default class {
 				return;
 		}
 
+		const fetchParam = <jsErrorFetchParam>this.#option.fetchParam;
+
 		const formData = new FormData();
-		formData.append('location', location.toString());
-		formData.append('message', message);
-		formData.append('filename', filename);
-		formData.append('lineno', String(lineno));
-		formData.append('colno', String(colno));
+		formData.append(fetchParam.location, location.toString());
+		formData.append(fetchParam.message, message);
+		formData.append(fetchParam.filename, filename);
+		formData.append(fetchParam.lineno, String(lineno));
+		formData.append(fetchParam.colno, String(colno));
 
 		const response = await fetch(this.#endpoint, {
 			method: 'POST',
