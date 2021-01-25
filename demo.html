@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>`ReportJSError.js` Demo</title>
+		<script type="module">
+			import ReportJSError from './dist/ReportJSError.js';
+
+			const reportJSError = new ReportJSError('https://w0s.jp/report/js', {
+				denyUAs: [/Googlebot\/2.1;/],
+				fetchHeaders: {
+					'X-Requested-With': 'fetch',
+				},
+			});
+			reportJSError.init();
+
+			const foo = hoge; // Causing errors on purpose
+		</script>
+	</head>
+	<body>
+		<h1>`ReportJSError.js` Demo</h1>
+
+		<p>
+			We have deliberately generated an error in the <code>&lt;script&gt;</code> embedded in the HTML of this page, so that you can verify that communication to
+			the endpoint takes place using packet capture software or browser developer tools.
+		</p>
+	</body>
+</html>
