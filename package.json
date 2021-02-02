@@ -16,6 +16,7 @@
 		"src"
 	],
 	"type": "module",
+	"main": "dist/ReportJSError.js",
 	"module": "dist/ReportJSError.js",
 	"types": "dist/ReportJSError.d.ts",
 	"repository": {
@@ -24,10 +25,10 @@
 	},
 	"scripts": {
 		"_build:tsc": "tsc -w",
-		"_build:compress": "onchange -f add -f change -v dist/ReportJSError.js -- brotlin compress dist/ReportJSError.js -m 1",
-		"_build:minify": "onchange -f add -f change -v dist/ReportJSError.js -- terser dist/ReportJSError.js -o dist/ReportJSError.min.js -c ecma=2020 --mangle --ecma 2020 --module --source-map content='dist/ReportJSError.js.map',filename='ReportJSError.js',includeSources,url='ReportJSError.min.js.map'",
-		"_build:minify-compress": "onchange -f add -f change -v dist/ReportJSError.min.js -- brotlin compress dist/ReportJSError.min.js -m 1",
-		"_build:minify-declaration": "onchange -f add -f change -v dist/ReportJSError.d.ts -- cpy dist/ReportJSError.d.ts dist --rename=ReportJSError.min.d.ts",
+		"_build:compress": "onchange -f add -f change -v dist/ReportJSError.js -- brotlin compress {{file}} -m 1",
+		"_build:minify": "onchange -f add -f change -v dist/ReportJSError.js -- terser {{file}} -o {{fileDir}}/{{fileBaseNoExt}}.min.js -c ecma=2020 --mangle --ecma 2020 --module --source-map content='{{fileDir}}/{{fileBaseNoExt}}.js.map',filename='{{fileBaseNoExt}}.js',includeSources,url='{{fileBaseNoExt}}.min.js.map'",
+		"_build:minify-compress": "onchange -f add -f change -v dist/ReportJSError.min.js -- brotlin compress {{file}} -m 1",
+		"_build:minify-declaration": "onchange -f add -f change -v dist/ReportJSError.d.ts -- cpy {{file}} dist --rename=ReportJSError.min.d.ts",
 		"build": "run-p _build:*"
 	},
 	"devDependencies": {
