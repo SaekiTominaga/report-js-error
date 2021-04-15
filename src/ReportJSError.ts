@@ -1,13 +1,15 @@
-interface jsErrorFetchParam {
+interface FetchParam {
 	location: string; // Field name when sending `location` to an endpoint.
 	message: string; // Field name when sending `ErrorEvent.message` to an endpoint.
 	filename: string; // Field name when sending `ErrorEvent.filename` to an endpoint.
 	lineno: string; // Field name when sending `ErrorEvent.lineno` to an endpoint.
 	colno: string; // Field name when sending `ErrorEvent.colno` to an endpoint.
 }
+type fetchContentType = 'application/x-www-form-urlencoded' | 'application/json';
 
-interface jsErrorFetchOption {
-	fetchParam?: jsErrorFetchParam;
+interface Option {
+	fetchParam?: FetchParam;
+	fetchContentType?: fetchContentType;
 	fetchHeaders?: HeadersInit; // Header to add to the `fetch()` request. <https://fetch.spec.whatwg.org/#typedefdef-headersinit>
 	denyFilenames?: RegExp[]; // If the script filename (`ErrorEvent.filename`) matches this regular expression, do not send report
 	allowFilenames?: RegExp[]; // If the script filename (`ErrorEvent.filename`) matches this regular expression, send report
@@ -19,16 +21,16 @@ interface jsErrorFetchOption {
  * Send script error information to endpoints.
  */
 export default class {
-	#endpoint: string; // エンドポイントの URL
-	#option: jsErrorFetchOption;
+	#endpoint: string; // URL of the endpoint
+	#option: Option; // Information such as transmission conditions
 
 	#errorEventListener: (ev: ErrorEvent) => void;
 
 	/**
 	 * @param {string} endpoint - URL of the endpoint
-	 * @param {jsErrorFetchOption} option - Information such as transmission conditions
+	 * @param {Option} option - Information such as transmission conditions
 	 */
-	constructor(endpoint: string, option: jsErrorFetchOption = {}) {
+	constructor(endpoint: string, option: Option = {}) {
 		this.#endpoint = endpoint;
 
 		if (option.fetchParam === undefined) {
@@ -42,14 +44,14 @@ export default class {
 		}
 		this.#option = option;
 
-		this.#errorEventListener = this._errorEvent.bind(this);
+		this.#errorEventListener = this.errorEvent.bind(this);
 	}
 
 	/**
 	 * Initial processing
 	 */
 	init(): void {
-		if (!this._checkUserAgent()) {
+		if (!this.checkUserAgent()) {
 			return;
 		}
 
@@ -61,7 +63,7 @@ export default class {
 	 *
 	 * @returns {boolean} 対象なら true
 	 */
-	private _checkUserAgent(): boolean {
+	private checkUserAgent(): boolean {
 		const ua = navigator.userAgent;
 
 		const denyUAs = this.#option.denyUAs;
@@ -83,7 +85,7 @@ export default class {
 	 *
 	 * @param {ErrorEvent} ev - ErrorEvent
 	 */
-	private async _errorEvent(ev: ErrorEvent): Promise<void> {
+	private async errorEvent(ev: ErrorEvent): Promise<void> {
 		const message = ev.message;
 		const filename = ev.filename;
 		const lineno = ev.lineno;
@@ -115,7 +117,7 @@ export default class {
 				return;
 		}
 
-		const fetchParam = <jsErrorFetchParam>this.#option.fetchParam;
+		const fetchParam = <FetchParam>this.#option.fetchParam;
 
 		const formData = new FormData();
 		formData.append(fetchParam.location, location.toString());
@@ -124,11 +126,22 @@ export default class {
 		formData.append(fetchParam.lineno, String(lineno));
 		formData.append(fetchParam.colno, String(colno));
 
+		const contentType = this.#option.fetchContentType;
+
+		const fetchHeaders = new Headers(this.#option.fetchHeaders);
+		if (contentType !== undefined) {
+			fetchHeaders.set('Content-Type', contentType);
+		}
+
+		const fetchBody: BodyInit =
+			contentType === 'application/json' ? JSON.stringify(Object.fromEntries(formData)) : new URLSearchParams(<string[][]>[...formData]);
+
 		const response = await fetch(this.#endpoint, {
 			method: 'POST',
-			headers: this.#option.fetchHeaders,
-			body: new URLSearchParams(<string[][]>[...formData]),
+			headers: fetchHeaders,
+			body: fetchBody,
 		});
+
 		if (!response.ok) {
 			console.error(`"${response.url}" is ${response.status} ${response.statusText}`);
 			return;

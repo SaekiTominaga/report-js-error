@@ -1,12 +1,14 @@
-interface jsErrorFetchParam {
+interface FetchParam {
     location: string;
     message: string;
     filename: string;
     lineno: string;
     colno: string;
 }
-interface jsErrorFetchOption {
-    fetchParam?: jsErrorFetchParam;
+declare type fetchContentType = 'application/x-www-form-urlencoded' | 'application/json';
+interface Option {
+    fetchParam?: FetchParam;
+    fetchContentType?: fetchContentType;
     fetchHeaders?: HeadersInit;
     denyFilenames?: RegExp[];
     allowFilenames?: RegExp[];
@@ -20,9 +22,9 @@ export default class {
     #private;
     /**
      * @param {string} endpoint - URL of the endpoint
-     * @param {jsErrorFetchOption} option - Information such as transmission conditions
+     * @param {Option} option - Information such as transmission conditions
      */
-    constructor(endpoint: string, option?: jsErrorFetchOption);
+    constructor(endpoint: string, option?: Option);
     /**
      * Initial processing
      */
@@ -32,13 +34,13 @@ export default class {
      *
      * @returns {boolean} 対象なら true
      */
-    private _checkUserAgent;
+    private checkUserAgent;
     /**
      * エラー情報をエンドポイントに送信する
      *
      * @param {ErrorEvent} ev - ErrorEvent
      */
-    private _errorEvent;
+    private errorEvent;
 }
 export {};
 //# sourceMappingURL=ReportJSError.d.ts.map

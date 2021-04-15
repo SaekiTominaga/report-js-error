@@ -18,11 +18,11 @@ var _endpoint, _option, _errorEventListener;
 export default class {
     /**
      * @param {string} endpoint - URL of the endpoint
-     * @param {jsErrorFetchOption} option - Information such as transmission conditions
+     * @param {Option} option - Information such as transmission conditions
      */
     constructor(endpoint, option = {}) {
-        _endpoint.set(this, void 0); // エンドポイントの URL
-        _option.set(this, void 0);
+        _endpoint.set(this, void 0); // URL of the endpoint
+        _option.set(this, void 0); // Information such as transmission conditions
         _errorEventListener.set(this, void 0);
         __classPrivateFieldSet(this, _endpoint, endpoint);
         if (option.fetchParam === undefined) {
@@ -35,13 +35,13 @@ export default class {
             };
         }
         __classPrivateFieldSet(this, _option, option);
-        __classPrivateFieldSet(this, _errorEventListener, this._errorEvent.bind(this));
+        __classPrivateFieldSet(this, _errorEventListener, this.errorEvent.bind(this));
     }
     /**
      * Initial processing
      */
     init() {
-        if (!this._checkUserAgent()) {
+        if (!this.checkUserAgent()) {
             return;
         }
         window.addEventListener('error', __classPrivateFieldGet(this, _errorEventListener), { passive: true });
@@ -51,7 +51,7 @@ export default class {
      *
      * @returns {boolean} 対象なら true
      */
-    _checkUserAgent() {
+    checkUserAgent() {
         const ua = navigator.userAgent;
         const denyUAs = __classPrivateFieldGet(this, _option).denyUAs;
         if (denyUAs !== undefined && denyUAs.some((denyUA) => denyUA.test(ua))) {
@@ -70,7 +70,7 @@ export default class {
      *
      * @param {ErrorEvent} ev - ErrorEvent
      */
-    async _errorEvent(ev) {
+    async errorEvent(ev) {
         const message = ev.message;
         const filename = ev.filename;
         const lineno = ev.lineno;
@@ -105,10 +105,16 @@ export default class {
         formData.append(fetchParam.filename, filename);
         formData.append(fetchParam.lineno, String(lineno));
         formData.append(fetchParam.colno, String(colno));
+        const contentType = __classPrivateFieldGet(this, _option).fetchContentType;
+        const fetchHeaders = new Headers(__classPrivateFieldGet(this, _option).fetchHeaders);
+        if (contentType !== undefined) {
+            fetchHeaders.set('Content-Type', contentType);
+        }
+        const fetchBody = contentType === 'application/json' ? JSON.stringify(Object.fromEntries(formData)) : new URLSearchParams([...formData]);
         const response = await fetch(__classPrivateFieldGet(this, _endpoint), {
             method: 'POST',
-            headers: __classPrivateFieldGet(this, _option).fetchHeaders,
-            body: new URLSearchParams([...formData]),
+            headers: fetchHeaders,
+            body: fetchBody,
         });
         if (!response.ok) {
             console.error(`"${response.url}" is ${response.status} ${response.statusText}`);
