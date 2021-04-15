@@ -2,27 +2,30 @@
 <html lang="en">
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>`ReportJSError.js` Demo</title>
+		<title>`ReportJsError.js` Demo</title>
 		<script type="module">
-			import ReportJSError from './dist/ReportJSError.js';
+			import ReportJsError from './dist/ReportJsError.js';
 
-			const reportJSError = new ReportJSError('https://w0s.jp/report/js', {
+			const reportJsError = new ReportJsError('https://w0s.jp/report/js', {
 				fetchHeaders: {
 					'X-Requested-With': 'fetch',
 				},
 				denyUAs: [/Googlebot\/2.1;/],
 			});
-			reportJSError.init();
+			reportJsError.init();
 
-			const foo = hoge; // Causing errors on purpose
+			document.getElementById('button').addEventListener('click', () => {
+				const foo = hoge; // Causing errors on purpose
+			});
 		</script>
 	</head>
 	<body>
-		<h1>`ReportJSError.js` Demo</h1>
+		<h1>`ReportJsError.js` Demo</h1>
 
 		<p>
-			We have deliberately generated an error in the <code>&lt;script&gt;</code> embedded in the HTML of this page, so that you can verify that communication to
-			the endpoint takes place using packet capture software or browser developer tools.
+			If you press the button below, a script error will occur. You can use packet capture software or browser development tools to verify that communication to
+			the endpoint is taking place.
 		</p>
+		<p><button type="button" id="button">Causing errors on purpose</button></p>
 	</body>
 </html>
