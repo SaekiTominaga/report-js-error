@@ -1,6 +1,6 @@
 {
 	"name": "@saekitominaga/report-js-error",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"description": "Send script error information to endpoints.",
 	"keywords": [
 		"Report"
