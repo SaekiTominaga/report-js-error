@@ -16,9 +16,9 @@
 		"src"
 	],
 	"type": "module",
-	"main": "dist/ReportJSError.js",
-	"module": "dist/ReportJSError.js",
-	"types": "dist/ReportJSError.d.ts",
+	"main": "dist/ReportJsError.js",
+	"module": "dist/ReportJsError.js",
+	"types": "dist/ReportJsError.d.ts",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/SaekiTominaga/report-js-error.git"
