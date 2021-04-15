@@ -11,34 +11,35 @@ Detects the `error` event of the `window` object and sends error information to 
 ## Examples
 
 ```JavaScript
-import ReportJSError from '@saekitominaga/report-js-error';
+import ReportJsError from '@saekitominaga/report-js-error';
 
-const reportJSError = new ReportJSError('https://report.example.com/js', {
-  'fetchParam': {
+const reportJsError = new ReportJsError('https://report.example.com/js', {
+  fetchParam: {
     location: 'loc',
     message: 'msg',
     filename: 'file',
     lineno: 'line',
     colno: 'col',
   },
-  'fetchHeaders': {
+  fetchContentType: 'application/json',
+  fetchHeaders: {
     'X-Requested-With': 'hoge',
   },
-  'allowFilenames': [
+  allowFilenames: [
     /\.js$/,
     /\.mjs$/,
   ],
-  'denyUAs': [
+  denyUAs: [
     /Googlebot\/2.1;/,
   ],
 });
-reportJSError.init();
+reportJsError.init();
 ```
 
 ## Constructor
 
 ```TypeScript
-new ReportJSError(endpoint: string, option: {
+new ReportJsError(endpoint: string, option: {
   fetchParam?: {
     location: string; // Field name when sending `location` to an endpoint. The default value when omitted is `location`. (e.g. location=https%3A%2F%2Fexample.com%2Fpath%2Fto&message=(omit)&filename=(omit)&lineno=(omit)&colno=(omit) )
     message: string; // Field name when sending `ErrorEvent.message` to an endpoint. The default value when omitted is `message`. (e.g. location=(omit)&message=ReferenceError%3A+hoge+is+not+defined&filename=(omit)&lineno=(omit)&colno=(omit) )
@@ -46,20 +47,21 @@ new ReportJSError(endpoint: string, option: {
     lineno: string; // Field name when sending `ErrorEvent.lineno` to an endpoint. The default value when omitted is `lineno`. (e.g. location=(omit)&referrer=(omit)&message=(omit)&filename=(omit)&lineno=10&colno=(omit) )
     colno: string; // Field name when sending `ErrorEvent.colno` to an endpoint. The default value when omitted is `colno`. (e.g. location=(omit)&referrer=(omit)&message=(omit)&filename=(omit)&lineno=(omit)&colno=20 )
   },
+  fetchContentType?: fetchContentType; // `Content-Type` header to be set in `fetch()` request. ('application/x-www-form-urlencoded' or 'application/json')
+  fetchHeaders?: HeadersInit; // Header to add to the `fetch()` request. <https://fetch.spec.whatwg.org/#typedefdef-headersinit>
   denyFilenames?: RegExp[]; // If the script filename (`ErrorEvent.filename`) matches this regular expression, do not send report
   allowFilenames?: RegExp[]; // If the script filename (`ErrorEvent.filename`) matches this regular expression, send report
   denyUAs?: RegExp[]; // If a user agent matches this regular expression, do not send report
   allowUAs?: RegExp[]; // If a user agent matches this regular expression, send report
-  fetchHeaders?: HeadersInit; // Header to add to the `fetch()` request. <https://fetch.spec.whatwg.org/#typedefdef-headersinit>
 } = {})
 ```
 
 ### Parameters
 
 <dl>
-<dt>endpoint [required]</dt>
+<dt><code>endpoint</code> [required]</dt>
 <dd>URL of the endpoint</dd>
-<dt>option [optional]</dt>
+<dt><code>option</code> [optional]</dt>
 <dd>Information such as transmission conditions</dd>
 </dl>
 
